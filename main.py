@@ -17,61 +17,70 @@ def main(name):
     descriptors = []
     color_descriptors = []
     color_diff_descriptors = []
+    descript = []
 
     for i in range(len(imgs)):
         if imgs[i] is None:
             break
         img = image_processing.draw_points(imgs[i],points[i])
         image_processing.show(img,"Image "+str(i))
-        desc, refs, colors, colors_diff = descriptor.extract(imgs[i],points[i])
+        desc, refs, colors, colors_diff, descr = descriptor.extract(imgs[i],points[i])
         info.show("-------------------- Image "+str(i)+"---------------------")
         info.show(desc)
         descriptors.append(desc)
         color_descriptors.append(colors)
         color_diff_descriptors.append(colors_diff)
-        img = image_processing.draw_points_descriptors(imgs[i], refs)
-        image_processing.show(img,"Image "+str(i))
+        descript.append(descr)
+        #img = image_processing.draw_points_descriptors(imgs[i], refs)
+        #image_processing.show(img,"Image "+str(i))
 
+    auces1 = []
+    auces2 = []
+    auces3 = []
 
-    #desc1 = descriptors[0][0]
-    #desc2 = descriptors[1][0]
-    #
-    # normalized_descriptors = []
-    #
-    # for i in range(len(descriptors)):
-    #     descript = []
-    #     for j in range(len(descriptors[i])):
-    #         info.show(descriptors[i][j])
-    #         descript.append(descriptor.normalize_descriptor(descriptors[i][j]))
-    #         info.show(descript[j])
-    #     normalized_descriptors.append(descript)
-    # print(normalized_descriptors)
-    #
-    # for i in range(1, len(normalized_descriptors)):
-    #     descriptor.distance(normalized_descriptors[0], normalized_descriptors[i])
+    for i in range(len(color_diff_descriptors)):
+        for j in range(len(color_diff_descriptors)):
+            if i != j:
+                auc1 = descriptor.distance2(color_diff_descriptors[i], color_diff_descriptors[j])
+                auces1.append(auc1)
 
-    auces = []
+    for i in range(len(color_descriptors)):
+        for j in range(len(color_descriptors)):
+            if i != j:
+                auc2 = descriptor.distance2(color_descriptors[i], color_descriptors[j])
+                auces2.append(auc2)
 
-    for i in range(1, len(color_diff_descriptors)):
-        auc = descriptor.distance2(color_diff_descriptors[0], color_diff_descriptors[i])
-        auces.append(auc)
+    for i in range(len(descript)):
+        for j in range(len(descript)):
+            if i != j:
+                auc3 = descriptor.distance2(descript[i], descript[j])
+                auces3.append(auc3)
 
-    m = np.mean(auces)
-    print(m)
+    m = np.mean(auces1)
+    m2 = np.mean(auces2)
+    m3 = np.mean(auces3)
+    print(m, m2, m3)
 
-    return m
+    return m, m2, m3
 
 
 def main2():
     l = []
+    l2 = []
+    l3 = []
     names = ["bark", "bikes", "boat", "graf", "leuven", "trees", "ubc", "wall"]
 
     for n in names:
         for i in range(10):
-            l.append(main(n))
+            m1, m2, m3 = main(n)
+            l.append(m1)
+            l2.append(m2)
+            l3.append(m3)
     print(np.mean(l))
+    print(np.mean(l2))
+    print(np.mean(l3))
 
 
 if __name__ == "__main__":
-    #main2()
-    main("bark")
+    main2()
+    #main("wall")
