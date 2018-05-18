@@ -2,8 +2,6 @@ import math
 import image_processing
 import info
 import numpy as np
-import random
-import operator
 from sklearn.metrics import roc_auc_score
 
 distance_start = 3 #10
@@ -15,24 +13,24 @@ angle_step = math.pi / number_of_sections
 
 radius = 32
 
-
+# trzeba zrobić żeby zwracał tylko jeden deskryptor
 def extract(image, keypoints):
+    image = image_processing.image_preprocess(image)
     descriptors = []
     references = []
     colors = []
-    color_diff = []
     descript = []
     for point in keypoints:
-        desc, ref, col, col_diff = get_descriptor(image, point)
+        desc, ref, col = get_descriptor(image, point)
         descr = get_descriptor2(image, point)
         descriptors.append(desc)
         references.append(ref)
         colors.append(col)
-        color_diff.append(col_diff)
         descript.append(descr)
-    return descriptors, references, colors, color_diff, descript
+    return descriptors, references, colors, descript
 
 
+# deskryptor okręgi od punktu do promienia 32 zczytywanie koloru
 def get_descriptor2(image, point):
     angle_degree = math.pi / 360
     desc = []
@@ -55,24 +53,20 @@ def get_descriptor(image, point):
     descriptor = []
     reference_points = []
     colors = []
-    color_diff = []
 
     if reference_color is None:
         for i in range(number_of_sections):
             tmp_descriptor = []
             tmp_points = []
             tmp_colors = []
-            tmp_color_diff = []
             for j in range(number_of_subsections):
                 tmp_descriptor.append(0)
                 tmp_points.append([(-1, -1), 0])
                 tmp_colors.append(-1)
-                tmp_color_diff.append(255)
             descriptor.append(tmp_descriptor)
             reference_points.append(tmp_points)
             colors.append(tmp_colors)
-            color_diff.append(tmp_color_diff)
-        return descriptor, reference_points, colors, color_diff
+        return descriptor, reference_points, colors
 
     for i in range(number_of_sections):  # iterowanie po kącie
         angle = i*angle_step
@@ -82,7 +76,6 @@ def get_descriptor(image, point):
         tmp_points = [[tuple(point),0]]
         tmp_descriptor = []
         tmp_colors = []
-        tmp_color_diff = []
 
         distance = distance_start
         sign = 0
@@ -96,7 +89,6 @@ def get_descriptor(image, point):
                 tmp_descriptor.append((distance - distance_step)*last_trend)
                 tmp_points.append([tuple(prev_point), last_trend])
                 tmp_colors.append(reference_color)
-                #tmp_color_diff.append(max(abs(reference_color - 255), abs(reference_color)))
                 break
 
             new_trend = np.sign(checking_point_color - reference_color)  # 1 jeśli jaśniejszy, -1 jeśli ciemniejszy, 0 taki sam
@@ -104,7 +96,6 @@ def get_descriptor(image, point):
                 tmp_descriptor.append((distance - distance_step)*last_trend)
                 tmp_points.append([tuple(prev_point), last_trend])
                 tmp_colors.append(checking_point_color)
-                tmp_color_diff.append(checking_point_color - reference_color)
 
                 last_trend = 0
                 reference_color = checking_point_color
@@ -120,9 +111,8 @@ def get_descriptor(image, point):
         descriptor.append(tmp_descriptor)
         reference_points.append(tmp_points)
         colors.append(tmp_colors)
-        color_diff.append(tmp_color_diff)
 
-    return descriptor, reference_points, colors, color_diff
+    return descriptor, reference_points, colors
 
 
 # def normalize_descriptor(descriptor):
@@ -131,13 +121,12 @@ def get_descriptor(image, point):
 #     return incremental
 
 
+# podliczanie auc dla deskryptorów dwóch obrazków
 def distance2(descriptor1, descriptor2):
     desc = dict()
     for i in range(len(descriptor1)):
         for j in range(len(descriptor2)):
             desc[(i, j)] = distance(descriptor1[i], descriptor2[j])
-            #print("(", i, ",", j, ") : ", desc[(i, j)])
-    #print("\n\n")
 
     y_true = []
     y_scores = []
@@ -153,6 +142,7 @@ def distance2(descriptor1, descriptor2):
     return auc
 
 
+# różnica średnich kolorów w dwóch punktach
 def distance(descriptor1, descriptor2):
     line_descriptor1 = []
     for i in range(len(descriptor1)):
@@ -170,8 +160,7 @@ def distance(descriptor1, descriptor2):
     if math.isnan(max_s):
         max_s = 255
 
-    s = abs(s1 - s2)
-    s = round(s, 2)
+    s = abs(s1**2 - s2**2)
     if math.isnan(s):
         s = max_s
     return s
