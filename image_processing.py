@@ -8,7 +8,7 @@ img_name_format = "img%s"
 formats = [".ppm", ".pgm"]
 
 
-def read_image(set, nr):
+def read_image(set, nr, result_file):
     file = img_name_format % (nr)
     for format in formats:
         file_name = path + set + "/" + file + format
@@ -16,6 +16,7 @@ def read_image(set, nr):
         if img is not None:
             img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             info.show("Loaded file " + file_name)
+            result_file.write("Loaded file " + file_name + "\n")
             break
         info.show("Can't load file " + file_name)
 
@@ -51,10 +52,10 @@ def gray_to_rgb(gray):
     return cv2.cvtColor(gray, cv2.COLOR_GRAY2RGB)
 
 
-def read_images(set):
+def read_images(set, file):
     imgs = []
     for i in range(1, 7):
-        img = read_image(set, i)
+        img = read_image(set, i, file)
         imgs.append(img)
     return imgs
 

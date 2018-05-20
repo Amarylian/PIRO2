@@ -19,15 +19,15 @@ def extract(image, keypoints):
     descriptors = []
     references = []
     colors = []
-    descript = []
+    #descript = []
     for point in keypoints:
         desc, ref, col = get_descriptor(image, point)
-        descr = get_descriptor2(image, point)
+        #descr = get_descriptor2(image, point)
         descriptors.append(desc)
         references.append(ref)
         colors.append(col)
-        descript.append(descr)
-    return descriptors, references, colors, descript
+        #descript.append(descr)
+    return descriptors, references, colors #, descript
 
 
 # deskryptor okręgi od punktu do promienia 32 zczytywanie koloru
@@ -122,7 +122,7 @@ def get_descriptor(image, point):
 
 
 # podliczanie auc dla deskryptorów dwóch obrazków
-def distance2(descriptor1, descriptor2):
+def distance2(descriptor1, descriptor2, file):
     desc = dict()
     for i in range(len(descriptor1)):
         for j in range(len(descriptor2)):
@@ -139,28 +139,43 @@ def distance2(descriptor1, descriptor2):
 
     auc = roc_auc_score(y_true, y_scores)
     print("AUC: ", auc)
+    file.write("AUC: " + str(auc) + "\n")
     return auc
 
 
 # różnica średnich kolorów w dwóch punktach
 def distance(descriptor1, descriptor2):
-    line_descriptor1 = []
+    descriptor_in_line1 = []
     for i in range(len(descriptor1)):
-        line_descriptor1.append(np.mean(descriptor1[i]))
-    s1 = np.mean(line_descriptor1)
-    max_s1 = max(line_descriptor1)
+        for j in range(len(descriptor1[i])):
+            descriptor_in_line1.append(descriptor1[i][j])
 
-    line_descriptor2 = []
+    if len(descriptor_in_line1) == 0:
+        s1 = 0
+        max_s1 = 0
+    else:
+        s1 = np.mean(descriptor_in_line1)
+        max_s1 = max(descriptor_in_line1)
+
+    descriptor_in_line2 = []
     for i in range(len(descriptor2)):
-        line_descriptor2.append(np.mean(descriptor2[i]))
-    s2 = np.mean(line_descriptor2)
-    max_s2 = max(line_descriptor2)
+        for j in range(len(descriptor2[i])):
+            descriptor_in_line2.append(descriptor2[i][j])
+
+    if len(descriptor_in_line2) == 0:
+        s2 = 0
+        max_s2 = 0
+    else:
+        s2 = np.mean(descriptor_in_line2)
+        max_s2 = max(descriptor_in_line2)
+
     max_s = max(max_s1, max_s2)
 
     if math.isnan(max_s):
         max_s = 255
 
-    s = abs(s1**2 - s2**2)
+    s = abs(s1 - s2)
+
     if math.isnan(s):
         s = max_s
     return s
