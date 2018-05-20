@@ -27,7 +27,7 @@ def extract(image, keypoints):
         references.append(ref)
         colors.append(col)
         #descript.append(descr)
-    return descriptors, references, colors #, descript
+    return colors  # descriptors, references, colors, descript
 
 
 # deskryptor okręgi od punktu do promienia 32 zczytywanie koloru

@@ -14,7 +14,7 @@ def main(name, file):
 
     points = points_transformations.generate_points(imgs, set)
 
-    descriptors = []
+    #descriptors = []
     color_descriptors = []
 
     for i in range(len(imgs)):
@@ -22,10 +22,11 @@ def main(name, file):
             break
         #img = image_processing.draw_points(imgs[i],points[i])
         #image_processing.show(img,"Image "+str(i))
-        desc, refs, colors = descriptor.extract(imgs[i],points[i])
+        #desc, refs, colors = descriptor.extract(imgs[i],points[i])
+        colors = descriptor.extract(imgs[i], points[i])
         #info.show("-------------------- Image "+str(i)+"---------------------")
         #info.show(desc)
-        descriptors.append(desc)
+        #descriptors.append(desc)
         color_descriptors.append(colors)
         #img = image_processing.draw_points_descriptors(imgs[i], refs)
         #image_processing.show(img,"Image "+str(i))
@@ -45,7 +46,7 @@ def main(name, file):
 
 
 def main2():
-    file = open("results.txt", "w")
+    file = open("results_20.txt", "w")
     l2 = []
     names = ["bark", "bikes", "boat", "graf", "leuven", "trees", "ubc", "wall"]
 
